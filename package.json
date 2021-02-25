@@ -6,11 +6,13 @@
   "scripts": {
     "build": "tsc --build",
     "start": "ts-node-dev src/server.ts",
-    "test": "NODE_ENV=test PORT=6969 jest"
+    "test": "NODE_ENV=test PORT=6969 jest",
+    "test:watch": "npm run test -- --watchAll"
   },
   "author": "Seb Scothorn",
   "license": "ISC",
   "dependencies": {
+    "class-validator": "^0.13.1",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-logger": "^3.2.1",
