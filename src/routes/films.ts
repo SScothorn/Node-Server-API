@@ -6,6 +6,7 @@ router.post(`/films`, async (ctx: Context) =>
 {
     try
     {
+        console.log(ctx.request.body);
         ctx.status = 201;
         ctx.body = {
             films: [

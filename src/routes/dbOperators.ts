@@ -4,8 +4,8 @@ import OperatorsController from "../controllers/operatorsController";
 
 const router = new Router();
 const operatorsController = new OperatorsController();
-import pool from '../dbConfig/dbConnector';
 
 router.get(`/operators`, operatorsController.get);
+router.post(`/operators/updatePos`, operatorsController.updatePos);
 
 export default router;
