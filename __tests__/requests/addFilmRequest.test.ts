@@ -1,4 +1,4 @@
-import { AddFilmRequest } from '../../src/requests/AddFilmRequest';
+import { AddFilmRequest } from '../../src/requests/addFilmRequest';
 import { validate } from "class-validator";
 
 describe("request/addFilmRequest", () =>

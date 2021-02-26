@@ -70,7 +70,6 @@ class OperatorsController
             if (affectedOperators > 0)
             {
                 ctx.status = 201;
-                // ctx.body = updatePosRequest;
             }
             else
             {
