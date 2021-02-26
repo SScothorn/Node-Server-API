@@ -62,8 +62,7 @@ class OperatorsController
             const client = await pool.connect();
 
             // console.log("Client Connected");
-            const sql = `UPDATE operators SET longitude = ${updatePosRequest.longitude}, latitude = ${updatePosRequest.latitude} WHERE id = ${updatePosRequest.id}`;
-            const response = await client.query(sql);
+            const response = await client.query(`UPDATE operators SET longitude = ${updatePosRequest.longitude}, latitude = ${updatePosRequest.latitude} WHERE id = ${updatePosRequest.id}`);
             const affectedOperators = response.rowCount;
 
             client.release();
@@ -155,21 +154,45 @@ class OperatorsController
 
             await promise;
 
+            // Clear table
+            const client = await pool.connect();
+
+            const truncateResponse = await client.query(`TRUNCATE TABLE operators`);
+
             // Collate 100 names and generate 100 coordinates that are in bristol because why not
+            let sql = "INSERT INTO operators (firstname, surname, active, latitude, longitude) VALUES ";
             names.forEach((name, i) =>
             {
-                operators[i] = {
-                    firstName: name.name.first,
-                    surname: name.name.last,
-                    active: Math.random() > 0.5,
-                    latitude: randomUtil.randomBetween2Values(bedminster.latitude, eastville.latitude, 3),
-                    longitude: randomUtil.randomBetween2Values(bedminster.longitude, eastville.longitude, 3)
-                };
+                const row: string = `${i > 0 ? "," : ""}(\'${name.name.first}\', \'${name.name.last}\', ${Math.random() > 0.5}, ${randomUtil.randomBetween2Values(bedminster.latitude, eastville.latitude, 3)}, ${randomUtil.randomBetween2Values(bedminster.longitude, eastville.longitude, 3)})`
+                sql += row;
+                console.log(row);
             });
-            console.log(operators);
+            sql += ";";
+            console.log(sql);
+
+            const insertResponse = await client.query(sql);
+            const affectedOperators = insertResponse.rowCount;
+
+            client.release();
+
+            // Return error if opertor doesn't exist
+            if (affectedOperators > 0)
+            {
+                ctx.status = 201;
+            }
+            else
+            {
+                ctx.status = 400;
+                ctx.body = {
+                    status: "error",
+                    data: "No Record Exists"
+                };
+            }
+
         }
         catch (err)
         {
+            ctx.status = 400;
             console.error(err);
         }
     }
