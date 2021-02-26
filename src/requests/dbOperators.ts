@@ -1,4 +1,4 @@
-import { IsInt, IsNumber, IsString, Length, Min } from "class-validator";
+import { IsInt, IsNumber, Min } from "class-validator";
 
 export class UpdatePosRequest
 {
