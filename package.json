@@ -17,7 +17,8 @@
     "koa-bodyparser": "^4.3.0",
     "koa-logger": "^3.2.1",
     "koa-router": "^10.0.0",
-    "koa2-cors": "^2.0.6"
+    "koa2-cors": "^2.0.6",
+    "pg": "^8.5.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
@@ -27,6 +28,7 @@
     "@types/koa-router": "^7.4.1",
     "@types/koa2-cors": "^2.0.1",
     "@types/node": "^14.14.31",
+    "@types/pg": "^7.14.10",
     "@types/supertest": "^2.0.10",
     "jest": "^26.6.3",
     "supertest": "^6.1.3",
