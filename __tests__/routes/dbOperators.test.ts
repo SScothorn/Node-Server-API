@@ -7,13 +7,25 @@ afterEach((done) =>
     done();
 });
 
+describe("request/operators", () =>
+{
+    it('should return a 201 status code', async () =>
+    {
+        const response = await request(server)
+            .get("/operators")
+            .send({});
+
+        expect(response.status).toEqual(201);
+    });
+});
+
 describe("request/operators/updatePos", () =>
 {
     it('should return a validation failure if the game data is incorrect', async () =>
     {
         const response = await request(server)
             .post("/operators/updatePos")
-            .send({ });
+            .send({});
 
         expect(response.status).toEqual(400);
         expect(response.type).toEqual("application/json");

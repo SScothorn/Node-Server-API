@@ -42,7 +42,7 @@ class OperatorsController
             updatePosRequest.latitude = ctx.request.body.latitude || '';
 
             const errors = await validate(updatePosRequest, validationOptions);
-            console.log(errors);
+            // console.log(errors);
 
             // Return early if invalid
             if (errors.length > 0)
@@ -59,7 +59,7 @@ class OperatorsController
             // Push change to db
             const client = await pool.connect();
 
-            console.log("Client Connected");
+            // console.log("Client Connected");
             const sql = `UPDATE operators SET longitude = ${updatePosRequest.longitude}, latitude = ${updatePosRequest.latitude} WHERE id = ${updatePosRequest.id}`;
             const response = await client.query(sql);
             const affectedOperators = response.rowCount;
