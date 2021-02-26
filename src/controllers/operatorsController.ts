@@ -94,66 +94,84 @@ class OperatorsController
      */
     public async populateTable(ctx: Context)
     {
-        interface IOperator
+        try
         {
-            firstName: string;
-            surname: string;
-            active: boolean;
-            longitude: number;
-            latitude: number;
-        }
-        const operators: IOperator[] = [];
-        interface INameResponse
-        {
-            name: {
-                first: string;
-                last: string;
-            };
-        }
-        let names: INameResponse[] = [];
-        interface ICoordinates
-        {
-            latitude: number;
-            longitude: number;
-        }
-
-        const numberOfRecords: number = 100;
-        let coordinates: ICoordinates[] = [];
-        const bedminster: ICoordinates = { latitude: 51.434, longitude: -2.615 };
-        const eastville: ICoordinates = { latitude: 51.473, longitude: -2.557 };
-
-        const url: string = `https://randomuser.me/api/?results=${numberOfRecords}&&?format=json`;
-        console.log(url);
-        // Get 100 Names from the api
-        await https.get(url, (resp) =>
-        {
-            let data = '';
-
-            // A chunk of data has been received.
-            resp.on('data', (chunk) =>
+            interface IOperator
             {
-                data += chunk;
-            });
-
-            // The whole response has been received. Print out the result.
-            resp.on('end', () =>
+                firstName: string;
+                surname: string;
+                active: boolean;
+                longitude: number;
+                latitude: number;
+            }
+            const operators: IOperator[] = [];
+            interface INameResponse
             {
-                names = JSON.parse(data).results;
+                name: {
+                    first: string;
+                    last: string;
+                };
+            }
+            let names: INameResponse[] = [];
+            interface ICoordinates
+            {
+                latitude: number;
+                longitude: number;
+            }
 
-                // Collate 100 names and generate 100 coordinates that are in bristol because why not
-                names.forEach((name, i) =>
+            const numberOfRecords: number = 100;
+            let coordinates: ICoordinates[] = [];
+            const bedminster: ICoordinates = { latitude: 51.434, longitude: -2.615 };
+            const eastville: ICoordinates = { latitude: 51.473, longitude: -2.557 };
+
+            const url: string = `https://randomuser.me/api/?results=${numberOfRecords}&&?format=json`;
+
+            // Get 100 Names from the api
+            let promise = new Promise((resolve, reject) =>
+            {
+                const req = https.get(url, (resp) =>
                 {
-                    operators[i] = {
-                        firstName: name.name.first,
-                        surname: name.name.last,
-                        active: Math.random() > 0.5,
-                        latitude: randomUtil.randomBetween2Values(bedminster.latitude, eastville.latitude, 3),
-                        longitude: randomUtil.randomBetween2Values(bedminster.longitude, eastville.longitude, 3)
-                    };
+                    let data = '';
+
+                    // A chunk of data has been received.
+                    resp.on('data', (chunk) =>
+                    {
+                        data += chunk;
+                    });
+
+                    // The whole response has been received. Print out the result.
+                    resp.on('end', () =>
+                    {
+                        names = JSON.parse(data).results;
+                        resolve(names);
+                    });
                 });
-                console.log(operators);
+
+                req.on('error', (err) =>
+                {
+                    reject(err);
+                });
             });
-        });
+
+            await promise;
+
+            // Collate 100 names and generate 100 coordinates that are in bristol because why not
+            names.forEach((name, i) =>
+            {
+                operators[i] = {
+                    firstName: name.name.first,
+                    surname: name.name.last,
+                    active: Math.random() > 0.5,
+                    latitude: randomUtil.randomBetween2Values(bedminster.latitude, eastville.latitude, 3),
+                    longitude: randomUtil.randomBetween2Values(bedminster.longitude, eastville.longitude, 3)
+                };
+            });
+            console.log(operators);
+        }
+        catch (err)
+        {
+            console.error(err);
+        }
     }
 }
 
