@@ -7,5 +7,6 @@ const operatorsController = new OperatorsController();
 
 router.get(`/operators`, operatorsController.get);
 router.post(`/operators/updatePos`, operatorsController.updatePos);
+router.head(`/operators/populateTable`, operatorsController.populateTable);
 
 export default router;
