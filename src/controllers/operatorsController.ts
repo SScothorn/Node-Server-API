@@ -14,15 +14,58 @@ class OperatorsController
         {
             const client = await pool.connect();
 
-            console.log("Client Connected");
             const sql = "SELECT * FROM operators";
             const { rows } = await client.query(sql);
-            const operators = rows;
 
             client.release();
 
             ctx.status = 201;
-            ctx.body = { operators };
+            ctx.body = { rows };
+        } catch (err)
+        {
+            ctx.status = 400;
+            console.error(err);
+        }
+    }
+
+    /** Takes a coordinate and returns the the table of operators sorted by closest first, and an optional range limit */
+    public async getClosest(ctx: Context)
+    {
+        try
+        {
+            // Validate the incoming request
+            const validationOptions = {};
+
+            const getClosestRequest = new requests.GetClosestRequest();
+            getClosestRequest.latitude = ctx.request.body.latitude || '';
+            getClosestRequest.longitude = ctx.request.body.longitude || '';
+            getClosestRequest.maxDistance = ctx.request.body.maxDistance || 5;
+
+            const errors = await validate(getClosestRequest, validationOptions);
+            // console.log(errors);
+
+            // Return early if invalid
+            if (errors.length > 0)
+            {
+                ctx.status = 400;
+                ctx.body = {
+                    status: "error",
+                    data: errors
+                };
+
+                return ctx;
+            }
+
+            const client = await pool.connect();
+
+            // Didn't have to use the custom calculation Adam gave, just installed the earthdistance module which added the <@> operator which already does that job
+            const sql = `SELECT *, point(${getClosestRequest.latitude}, ${getClosestRequest.longitude}) <@> point(latitude, longitude) AS distance FROM operators WHERE point(${getClosestRequest.latitude}, ${getClosestRequest.longitude}) <@> point(latitude, longitude) <= ${getClosestRequest.maxDistance} ORDER BY point(${getClosestRequest.latitude}, ${getClosestRequest.longitude}) <@> point(latitude, longitude);`;
+            const { rows } = await client.query(sql);
+
+            client.release();
+
+            ctx.status = 201;
+            ctx.body = { rows };
         } catch (err)
         {
             ctx.status = 400;
@@ -91,19 +134,34 @@ class OperatorsController
      * Clears the current table, and populates it with 100 fresh records
      * using name generator and cordinate generator apis
      */
+    public async clearTable(ctx: Context)
+    {
+        try
+        {
+            // Clear table
+            const client = await pool.connect();
+
+            const truncateResponse = await client.query(`TRUNCATE TABLE operators`);
+
+            client.release();
+            ctx.status = 201;
+
+        }
+        catch (err)
+        {
+            ctx.status = 400;
+            console.error(err);
+        }
+    }
+
+    /**
+     * Clears the current table, and populates it with 100 fresh records
+     * using name generator and cordinate generator apis for no reason other than why not
+     */
     public async populateTable(ctx: Context)
     {
         try
         {
-            interface IOperator
-            {
-                firstName: string;
-                surname: string;
-                active: boolean;
-                longitude: number;
-                latitude: number;
-            }
-            const operators: IOperator[] = [];
             interface INameResponse
             {
                 name: {
@@ -119,11 +177,10 @@ class OperatorsController
             }
 
             const numberOfRecords: number = 100;
-            let coordinates: ICoordinates[] = [];
             const bedminster: ICoordinates = { latitude: 51.434, longitude: -2.615 };
             const eastville: ICoordinates = { latitude: 51.473, longitude: -2.557 };
 
-            const url: string = `https://randomuser.me/api/?results=${numberOfRecords}&&?format=json`;
+            const url: string = `https://randomuser.me/api/?nat=gb&results=${numberOfRecords}&format=json`;
 
             // Get 100 Names from the api
             let promise = new Promise((resolve, reject) =>
@@ -165,10 +222,8 @@ class OperatorsController
             {
                 const row: string = `${i > 0 ? "," : ""}(\'${name.name.first}\', \'${name.name.last}\', ${Math.random() > 0.5}, ${randomUtil.randomBetween2Values(bedminster.latitude, eastville.latitude, 3)}, ${randomUtil.randomBetween2Values(bedminster.longitude, eastville.longitude, 3)})`
                 sql += row;
-                console.log(row);
             });
             sql += ";";
-            console.log(sql);
 
             const insertResponse = await client.query(sql);
             const affectedOperators = insertResponse.rowCount;

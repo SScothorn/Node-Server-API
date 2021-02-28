@@ -12,3 +12,15 @@ export class UpdatePosRequest
     @IsNumber()
     latitude!: number;
 }
+
+export class GetClosestRequest
+{
+    @IsNumber()
+    longitude!: number;
+
+    @IsNumber()
+    latitude!: number;
+
+    @IsNumber()
+    maxDistance!: number;
+}
