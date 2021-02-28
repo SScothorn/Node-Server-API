@@ -28,7 +28,7 @@ class OperatorsController
         }
     }
 
-    /** Takes a coordinate and returns the the table of operators sorted by closest first, and an optional range limit */
+    /** Takes a coordinate and returns the the table of operators (and distance) sorted by closest first, and an optional range limit */
     public async getClosest(ctx: Context)
     {
         try
